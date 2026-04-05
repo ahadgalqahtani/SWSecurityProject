@@ -12,6 +12,7 @@ public class LoginFrame extends JFrame {
     private JTextField usernameField;
     private JPasswordField passwordField;
     private JLabel statusLabel;
+    private JButton loginButton;
 
     public LoginFrame() {
         this.authService = new AuthService();
@@ -20,7 +21,7 @@ public class LoginFrame extends JFrame {
 
     private void initializeUi() {
         setTitle("Car Rental System - Login");
-        setSize(420, 260);
+        setSize(460, 260);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setResizable(false);
@@ -32,6 +33,7 @@ public class LoginFrame extends JFrame {
 
         usernameField = new JTextField(18);
         gbc = UiUtil.gbc(1, 0);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         panel.add(usernameField, gbc);
 
         gbc = UiUtil.gbc(0, 1);
@@ -39,9 +41,10 @@ public class LoginFrame extends JFrame {
 
         passwordField = new JPasswordField(18);
         gbc = UiUtil.gbc(1, 1);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         panel.add(passwordField, gbc);
 
-        JButton loginButton = new JButton("Login");
+        loginButton = new JButton("Login");
         loginButton.addActionListener(e -> handleLogin());
         gbc = UiUtil.gbc(0, 2);
         panel.add(loginButton, gbc);
@@ -58,6 +61,7 @@ public class LoginFrame extends JFrame {
         statusLabel.setForeground(Color.DARK_GRAY);
         gbc = UiUtil.gbc(0, 3);
         gbc.gridwidth = 2;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         panel.add(statusLabel, gbc);
 
         add(panel);
@@ -76,8 +80,27 @@ public class LoginFrame extends JFrame {
         } catch (IllegalArgumentException ex) {
             String username = usernameField.getText().trim();
             int remaining = authService.getRemainingAttempts(username);
-            statusLabel.setText(ex.getMessage() + " Remaining attempts: " + remaining);
-            JOptionPane.showMessageDialog(this, ex.getMessage(), "Login Error", JOptionPane.ERROR_MESSAGE);
+
+            if (remaining == 0) {
+                statusLabel.setText("Login locked for this session.");
+                loginButton.setEnabled(false);
+
+                JOptionPane.showMessageDialog(
+                    this,
+                    "Too many failed login attempts for this username.\nLogin is disabled for this session.",
+                    "Login Locked",
+                    JOptionPane.ERROR_MESSAGE
+                );
+            } else {
+                statusLabel.setText("Login failed. Remaining attempts: " + remaining);
+
+                JOptionPane.showMessageDialog(
+                    this,
+                    ex.getMessage() + "\nRemaining attempts: " + remaining,
+                    "Login Error",
+                    JOptionPane.ERROR_MESSAGE
+                );
+            }
         }
     }
 }
